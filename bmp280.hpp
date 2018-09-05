@@ -73,8 +73,7 @@ struct CalParams
  *
  * Description:
  *   A structure for recording temperature and pressure
- *   data as 32-bit integers. Time stamp thrown in for
- *   good measure.
+ *   data as 32-bit integers.
  *
  *   Useful for:
  *     1.  raw temperature and pressure data, or
@@ -88,7 +87,6 @@ struct CalParams
  */
 struct TP32Data
 {
-	  time_t  timestamp;
 	 int32_t  temperature;
 	uint32_t  pressure;
 };
