@@ -173,8 +173,10 @@ TP32Data BMP280::GetUncompData()
 
     this->GetRegs(BMP280_R_PMSB, dat, 6);
 
+    unc.timestamp = time(nullptr);
+
     unc.pressure =
-        (int32_t) (
+        (uint32_t) (
             (((uint32_t)dat[0]) << 12) |
             (((uint32_t)dat[1]) <<  4) |
             (((uint32_t)dat[2]) >>  4)
@@ -197,9 +199,14 @@ TP32Data BMP280::GetUncompData()
  *   Retrieves a temperature/pressure reading and applies
  *   32-bit fixed-point compensation.
  *
+ *   Temperature compensation is performed first, in order to generate
+ *   the 32-bit integer (tfine) that is required for the pressure
+ *   compensation function.
+ *
  * Returns:
- *   Returns a TP32Data structure containing a temperature reading,
- *   in 1/100 degrees centigrade, and pressure, in pascals.
+ *   Returns a TP32Data structure containing a time stamp, a temperature
+ *   reading (in 1/100 degrees centigrade), and a pressure reading (in
+ *   pascals).
  *
  * Namespace:
  *   bosch_bmp280
@@ -212,6 +219,7 @@ TP32Data BMP280::GetComp32FixedData()
 	TP32Data reading;
     TP32Data unc = this->GetUncompData();
 
+    reading.timestamp   = unc.timestamp;
     reading.temperature = this->Comp32FixedTemp(unc.temperature);
     reading.pressure    = this->Comp32FixedPress(unc.pressure);
 
