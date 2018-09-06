@@ -85,7 +85,6 @@ struct CalParams
  */
 struct TP32Data
 {
-	  time_t  timestamp;
 	 int32_t  temperature;
 	uint32_t  pressure;
 
