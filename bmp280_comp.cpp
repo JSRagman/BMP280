@@ -97,19 +97,19 @@ int32_t BMP280::Comp32FixedTemp(int32_t unctemp)
 	int32_t t2 = (int32_t)cparams.t2;
 	int32_t t3 = (int32_t)cparams.t3;
 
-	int32_t tvar1, tvar1a;
-	int32_t tvar2;
-	int32_t tvar3;
+	int32_t v1, v1a;
+	int32_t v2;
+	int32_t temperature;
 
-    tvar1 = (((unctemp >> 3)-(t1 << 1))*t2) >> 11;
-    tvar1a = ((unctemp >> 4)-t1);
+    v1  = (((unctemp >> 3)-(t1 << 1))*t2) >> 11;
+    v1a = ((unctemp >> 4)-t1) * ((unctemp >> 4)-t1);
 
-    tvar2 = ( ((tvar1a*tvar1a) >> 12) * t3) >> 14;
+    v2 = ( (v1a >> 12) * t3 ) >> 14;
 
-    tfine =  tvar1 + tvar2;
-    tvar3 = (tfine * 5 + 128) >> 8;
+    tfine =  v1 + v2;
+    temperature = (5*tfine + 128) >> 8;
 
-    return tvar3;
+    return temperature;
 }
 
 /*
