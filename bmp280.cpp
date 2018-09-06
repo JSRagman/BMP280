@@ -5,23 +5,35 @@
  *      Author: JSRagman
  *
  *  Description:
- *    Bosch Sensortec BMP280 Digital Pressure Sensor
+ *    Bosch Sensortec BMP280 Digital Pressure Sensor and associated
+ *    data structures.
  *
- *  Notes:
- *    1. Separated the functions dealing with temperature and
- *       pressure compensation into a dedicated source file.
- *       Seriously. It needed to be done.
+ *  Note:
+ *    Functions dealing with temperature and pressure compensation
+ *    are located in a separate source file. Seriously. It's better
+ *    this way.
  *
  *  And Another Thing:
  *    JSRagman is not associated in any way with the good people at
  *    Bosch, although sometimes he is a bit free with the drivers
  *    that are available on their GitHub site.
+ *
+ *  Just So You Know:
+ *    Do you see those little comments that follow most of my include
+ *    directives?  That is where I make note of the first type or
+ *    function that required me to include that particular header.
+ *
+ *    I find that this practice helps to keep me from getting lost in
+ *    header hell. If you also find this useful, you can claim that
+ *    you continue the practice in order to remain consistent with
+ *    existing code. Nobody needs to know.
  */
 
+#include <ctime>             // time_t, time()
 #include <unistd.h>          // usleep()
 
-#include "bmp280.hpp"
-#include "bmp280_defs.hpp"
+#include "bmp280.hpp"        // BMP280
+#include "bmp280_defs.hpp"   // BMP280_R_PMSB
 
 
 namespace bosch_bmp280
@@ -60,6 +72,34 @@ CalParams::CalParams()
 	p9 = 0;
 
 	loaded = false;
+}
+
+
+// TP32Data
+// -----------------------------------------------------------------
+
+/*
+ * TP32Data::TP32Data( int32_t temp, uint32_t press )
+ *
+ * Description:
+ *   Constructor. Sets the timestamp, along with temperature and
+ *   pressure values.
+ *
+ * Parameters:
+ *   temp  - optional. Temperature value. The default value is zero.
+ *   press - optional. Pressure value.    The default value is zero.
+ *
+ * Namespace:
+ *   bosch_bmp280
+ *
+ * Header File(s);
+ *   bmp280.hpp
+ */
+TP32Data::TP32Data( int32_t temp, uint32_t press )
+{
+	timestamp   = time(nullptr);
+	temperature = temp;
+	pressure    = press;
 }
 
 
@@ -113,11 +153,11 @@ BMP280::~BMP280()
  * TP32Data BMP280::GetUncompData()
  *
  * Description:
- *   Retrieves temperature and pressure data from the sensor.
+ *   Retrieves raw temperature and pressure data from the sensor.
  *
  * Returns:
  *   Returns a structure containing uncompensated temperature
- *   and pressure data and a time stamp.
+ *   and pressure data along with a time stamp.
  *
  * Namespace:
  *   bosch_bmp280
@@ -209,14 +249,15 @@ void BMP280::GetRegs(uint8_t startaddr, uint8_t* data, int len)
  *
  * Description:
  *   Writes to one or more device registers. Outgoing bytes must
- *   be organized in pairs - a register address is written first,
- *   followed by a data byte for that register.
+ *   be organized in pairs - a register address followed by a data
+ *   byte for that register.
+ *
  *   This {address, data} sequence is repeated for each register
  *   to be written.
  *
  * Parameters:
- *   data - pointer to a buffer containing {address, data}
- *          pairs to be written to the device.
+ *   data - pointer to a buffer that contains data which will be
+ *          written to the device.
  *   len  - the total number of bytes to be written.
  *
  * Namespace:
@@ -274,10 +315,10 @@ void BMP280::SetConfig(uint8_t ctrl, uint8_t conf)
  *   Sets the device to one of the six available preset configurations.
  *
  * Parameters:
- *   preset - Preset configuration number.
- *            An integer value between one and six, inclusive.
+ *   preset - Preset configuration number. An integer value between
+ *            one and six, inclusive.
  *            Values outside of this range will select the default
- *            configuration (PRE1).
+ *            configuration.
  *
  * Namespace:
  *   bosch_bmp280
@@ -330,8 +371,8 @@ void BMP280::SetConfig(int preset)
  * void BMP280::Reset()
  *
  * Description:
- *   Resets the device. Allows time for the
- *   reset process to complete before returning.
+ *   Resets the device. Allows time for the reset process to
+ *   complete before returning.
  *
  * Namespace:
  *   bosch_bmp280
