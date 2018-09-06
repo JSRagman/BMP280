@@ -5,15 +5,12 @@
  *      Author: JSRagman
  *
  *  Description:
- *    Bosch BMP280 Digital Pressure Sensor and supporting data structures.
+ *    Bosch BMP280 Digital Pressure Sensor and associated
+ *    data structures.
  *
- *  I2CBus:
- *    This header was tested on a BeagleBone Black. I'm sure other
- *    platform I2C busses will work just as well.
- *
- *  NOTE:
+ *  Note:
  *    This header was written by JSRagman, who is NOT a professional
- *    programmer.  Use it, if you like, but don't stake your life on it.
+ *    programmer. Use it, if you like, but don't stake your life on it.
  *
  *  And Another Thing:
  *    JSRagman is not associated in any way with the good people at
@@ -29,8 +26,9 @@
 #include  <mutex>            // std::mutex
 #include  <stdint.h>         // int16_t, uint16_t
 
-#include "bbb-i2c.hpp"
+#include "bbb-i2c.hpp"       // I2CBus
 
+using bbbi2c::I2CBus;
 
 namespace bosch_bmp280
 {
@@ -89,8 +87,9 @@ struct TP32Data
 {
 	 int32_t  temperature;
 	uint32_t  pressure;
-};
 
+	TP32Data ( int32_t temp=0, uint32_t press=0 );
+};
 
 
 class BMP280
@@ -98,8 +97,8 @@ class BMP280
 
 protected:
 
-	 bbbi2c::I2CBus*  i2cbus;
-	uint8_t           i2caddr;
+	 I2CBus*  i2cbus;
+	uint8_t   i2caddr;
 
 	 int32_t    tfine;
 	 CalParams  cparams;
@@ -108,7 +107,7 @@ public:
 
 	std::mutex mtx;
 
-	BMP280 ( bbbi2c::I2CBus* bus, uint8_t addr );
+	BMP280 ( I2CBus* bus, uint8_t addr );
 	~BMP280 ();
 
 	TP32Data  GetUncompData ();
@@ -128,9 +127,6 @@ public:
 
 }; // class BMP280
 
-
 } // namespace bosch_bmp280b
-
-
 
 #endif /* BMP280_HPP_ */
