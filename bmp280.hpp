@@ -27,6 +27,8 @@
 #include  <stdint.h>         // int16_t, uint16_t
 
 #include "bbb-i2c.hpp"       // I2CBus
+#include "bmp280_defs.hpp"
+#include "bmp280_comp.hpp"
 
 using bbbi2c::I2CBus;
 
