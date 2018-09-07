@@ -43,18 +43,18 @@ namespace bosch_bmp280
 struct CalParams
 {
     uint16_t  t1;
-    int16_t  t2;
-    int16_t  t3;
+     int16_t  t2;
+     int16_t  t3;
 
     uint16_t  p1;
-    int16_t  p2;
-    int16_t  p3;
-    int16_t  p4;
-    int16_t  p5;
-    int16_t  p6;
-    int16_t  p7;
-    int16_t  p8;
-    int16_t  p9;
+     int16_t  p2;
+     int16_t  p3;
+     int16_t  p4;
+     int16_t  p5;
+     int16_t  p6;
+     int16_t  p7;
+     int16_t  p8;
+     int16_t  p9;
 
     bool loaded;
 
@@ -80,8 +80,8 @@ struct CalParams
  */
 struct TP32Data
 {
-    time_t   timestamp;
-    int32_t  temperature;
+     time_t   timestamp;
+     int32_t  temperature;
     uint32_t  pressure;
 	
     TP32Data ( int32_t temp=0, uint32_t press=0 );
@@ -102,9 +102,9 @@ struct TP32Data
  */
 struct TP32DataSummary
 {
-    time_t   timestart;
-    time_t   timestop;
-    uint32_t samplecount;
+     time_t   timestart;
+     time_t   timestop;
+    uint32_t  samplecount;
 
     uint32_t high;
     uint32_t low;
