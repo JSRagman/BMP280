@@ -1,4 +1,4 @@
-```c++
+```
 /*
  * bmp280_data.hpp
  *
@@ -80,11 +80,11 @@ struct CalParams
  */
 struct TP32Data
 {
-		time_t   timestamp;
-		int32_t  temperature;
-		uint32_t  pressure;
-
-		TP32Data ( int32_t temp=0, uint32_t press=0 );
+    time_t   timestamp;
+    int32_t  temperature;
+    uint32_t  pressure;
+	
+    TP32Data ( int32_t temp=0, uint32_t press=0 );
 };
 
 /*
@@ -102,13 +102,13 @@ struct TP32Data
  */
 struct TP32DataSummary
 {
-		time_t   timestart;
-		time_t   timestop;
-		uint32_t samplecount;
+    time_t   timestart;
+    time_t   timestop;
+    uint32_t samplecount;
 
-		uint32_t high;
-		uint32_t low;
-		uint32_t average;
+    uint32_t high;
+    uint32_t low;
+    uint32_t average;
 };
 
 /*
@@ -145,7 +145,7 @@ class TP32DataQueue
     TP32DataQueue ( int capacity=60 );
 
     TP32Data back  ();
-		TP32Data front ();
+    TP32Data front ();
     TP32Data pop   ();
     int      push  ( TP32Data tpdata );
 
