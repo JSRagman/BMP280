@@ -1,3 +1,4 @@
+```
 /*
  * bmp280.cpp
  *
@@ -56,9 +57,9 @@ namespace bosch_bmp280
  */
 BMP280::BMP280(bbbi2c::I2CBus* bus, uint8_t addr)
 {
-	i2cbus  = bus;
-	i2caddr = addr;
-	tfine   = 0;
+    i2cbus  = bus;
+    i2caddr = addr;
+    tfine   = 0;
 }
 
 /*
@@ -144,7 +145,7 @@ TP32Data BMP280::GetUncompData()
  */
 TP32Data BMP280::GetComp32FixedData()
 {
-	TP32Data reading;
+    TP32Data reading;
     TP32Data unc = this->GetUncompData();
 
     reading.timestamp   = unc.timestamp;
@@ -200,7 +201,7 @@ void BMP280::GetRegs(uint8_t startaddr, uint8_t* data, int len)
  */
 void BMP280::SetRegs(uint8_t* data, int len)
 {
-	i2cbus->Write(data, len, i2caddr);
+    i2cbus->Write(data, len, i2caddr);
 }
 
 /*
@@ -234,7 +235,7 @@ void BMP280::SetConfig(uint8_t ctrl, uint8_t conf)
     uint8_t ctrx = (ctrl & BMP280_MODE_MSK_OUT);
     uint8_t dat[] { BMP280_R_CTRL, ctrx, BMP280_R_CONF, conf, BMP280_R_CTRL, ctrl };
 
-	this->Reset();
+    this->Reset();
     this->SetRegs(dat, 6);
     usleep(BMP280_CONFIG_DELAY);
 }
@@ -256,8 +257,8 @@ void BMP280::SetConfig(uint8_t ctrl, uint8_t conf)
  */
 void BMP280::SetConfig(int preset)
 {
-	uint8_t ctrl;
-	uint8_t conf;
+    uint8_t ctrl;
+    uint8_t conf;
 
     switch (preset)
     {
@@ -289,7 +290,7 @@ void BMP280::SetConfig(int preset)
         ctrl = BMP280_CTRL_PRE1;
         conf = BMP280_CONF_PRE1;
         break;
-	}
+    }
 
     this->SetConfig(ctrl, conf);
 }
@@ -316,3 +317,4 @@ void BMP280::Reset()
 }
 
 } // namespace bosch_bmp280
+```
