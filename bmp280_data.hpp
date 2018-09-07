@@ -88,10 +88,12 @@ struct TP32DataSummary
  *   New readings are pushed to the back of the queue, which
  *   increases in size until the stated capacity is reached.
  *   At this point, one reading is removed from the front of
- *   the queue for each new reading that is pushed to the back.
+ *   the queue for each new reading that is pushed.
  *
  *   In this way, the queue represents a moving time interval
- *   of fixed size.
+ *   of fixed size. The actual interval is determined by the
+ *   number of readings and the frequency at which they are
+ *   pushed.
  *
  * Namespace:
  *   bosch_bmp280
