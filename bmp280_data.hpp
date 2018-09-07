@@ -1,3 +1,4 @@
+```c++
 /*
  * bmp280_data.hpp
  *
@@ -41,23 +42,23 @@ namespace bosch_bmp280
  */
 struct CalParams
 {
-	uint16_t  t1;
-	 int16_t  t2;
-	 int16_t  t3;
+    uint16_t  t1;
+    int16_t  t2;
+    int16_t  t3;
 
-	uint16_t  p1;
-	 int16_t  p2;
-	 int16_t  p3;
-	 int16_t  p4;
-	 int16_t  p5;
-	 int16_t  p6;
-	 int16_t  p7;
-	 int16_t  p8;
-	 int16_t  p9;
+    uint16_t  p1;
+    int16_t  p2;
+    int16_t  p3;
+    int16_t  p4;
+    int16_t  p5;
+    int16_t  p6;
+    int16_t  p7;
+    int16_t  p8;
+    int16_t  p9;
 
-	bool loaded;
+    bool loaded;
 
-	CalParams();
+    CalParams();
 };
 
 /*
@@ -163,3 +164,4 @@ class TP32DataQueue
 } // namespace bosch_bmp280
 
 #endif /* BMP280_DATA_HPP_ */
+```
