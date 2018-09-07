@@ -20,13 +20,45 @@
 #ifndef BMP280_DATA_HPP_
 #define BMP280_DATA_HPP_
 
-
 #include <ctime>             // time_t
 #include <deque>             // deque
 #include <stdint.h>          // int32_t, uint32_t
 
 namespace bosch_bmp280
 {
+
+/*
+ * struct CalParams
+ *
+ * Description:
+ *   A structure for BMP280 calibration parameters.
+ *
+ * Namespace:
+ *   bosch_bmp280
+ *
+ * Header File(s):
+ *   bmp280_data.hpp
+ */
+struct CalParams
+{
+	uint16_t  t1;
+	 int16_t  t2;
+	 int16_t  t3;
+
+	uint16_t  p1;
+	 int16_t  p2;
+	 int16_t  p3;
+	 int16_t  p4;
+	 int16_t  p5;
+	 int16_t  p6;
+	 int16_t  p7;
+	 int16_t  p8;
+	 int16_t  p9;
+
+	bool loaded;
+
+	CalParams();
+};
 
 /*
  * struct TP32Data
@@ -47,11 +79,11 @@ namespace bosch_bmp280
  */
 struct TP32Data
 {
-	 time_t   timestamp;
-	 int32_t  temperature;
-	uint32_t  pressure;
+		time_t   timestamp;
+		int32_t  temperature;
+		uint32_t  pressure;
 
-	TP32Data ( int32_t temp=0, uint32_t press=0 );
+		TP32Data ( int32_t temp=0, uint32_t press=0 );
 };
 
 /*
@@ -69,13 +101,13 @@ struct TP32Data
  */
 struct TP32DataSummary
 {
-	time_t   timestart;
-	time_t   timestop;
-	uint32_t samplecount;
+		time_t   timestart;
+		time_t   timestop;
+		uint32_t samplecount;
 
-	uint32_t high;
-	uint32_t low;
-	uint32_t average;
+		uint32_t high;
+		uint32_t low;
+		uint32_t average;
 };
 
 /*
@@ -112,7 +144,7 @@ class TP32DataQueue
     TP32DataQueue ( int capacity=60 );
 
     TP32Data back  ();
-  	TP32Data front ();
+		TP32Data front ();
     TP32Data pop   ();
     int      push  ( TP32Data tpdata );
 
