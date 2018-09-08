@@ -108,7 +108,7 @@ struct TP32PressureSummary
 
     uint32_t high;
     uint32_t low;
-    uint32_t average;
+    double   average;
 };
 
 /*
@@ -132,7 +132,7 @@ struct TP32TemperatureSummary
 
 	int32_t high;
 	int32_t low;
-	int32_t average;
+	double  average;
 };
 
 
@@ -166,8 +166,9 @@ class TP32DataQueue
     std::deque<TP32Data> dq;
     unsigned int qcap;
 
-     int32_t t_high, t_low, t_avg;
-    uint32_t p_high, p_low, p_avg;
+     int32_t t_high, t_low;
+    uint32_t p_high, p_low;
+	 double  t_avg,  p_avg;
      bool    stale;
 
   public:
@@ -183,8 +184,17 @@ class TP32DataQueue
     bool     full  ();
     int      size  ();
     void     summarize ();
+    
     time_t   timestart ();
     time_t   timestop  ();
+
+    int32_t temperature_high();
+    int32_t temperature_low();
+    double  temperature_average();
+
+    uint32_t pressure_high();
+    uint32_t pressure_low();
+    double   pressure_average();
 
     TP32TemperatureSummary  TemperatureSummary();
     TP32PressureSummary     PressureSummary();
