@@ -88,11 +88,11 @@ struct TP32Data
 };
 
 /*
- * struct TP32DataSummary
+ * struct TP32PressureSummary
  *
  * Description:
- *   Intended to summarize a set of temperature or pressure
- *   readings over a given period of time.
+ *   Intended to summarize a set of pressure readings over a
+ *   given period of time.
  *
  * Namespace:
  *   bosch_bmp280
@@ -100,16 +100,41 @@ struct TP32Data
  * Header File(s):
  *   bmp280_data.hpp
  */
-struct TP32DataSummary
+struct TP32PressureSummary
 {
-     time_t   timestart;
-     time_t   timestop;
-    uint32_t  samplecount;
+    time_t   timestart;
+    time_t   timestop;
+    int      samplecount;
 
     uint32_t high;
     uint32_t low;
     uint32_t average;
 };
+
+/*
+ * struct TP32TemperatureSummary
+ *
+ * Description:
+ *   Intended to summarize a set of temperature readings over a
+ *   given period of time.
+ *
+ * Namespace:
+ *   bosch_bmp280
+ *
+ * Header File(s):
+ *   bmp280_data.hpp
+ */
+struct TP32TemperatureSummary
+{
+	time_t   timestart;
+	time_t   timestop;
+	int      samplecount;
+
+	int32_t high;
+	int32_t low;
+	int32_t average;
+};
+
 
 /*
  * class TP32DataQueue
@@ -141,6 +166,10 @@ class TP32DataQueue
     std::deque<TP32Data> dq;
     unsigned int qcap;
 
+     int32_t t_high, t_low, t_avg;
+    uint32_t p_high, p_low, p_avg;
+     bool    stale;
+
   public:
     TP32DataQueue ( int capacity=60 );
 
@@ -153,11 +182,12 @@ class TP32DataQueue
     void     clear ();
     bool     full  ();
     int      size  ();
+    void     summarize ();
     time_t   timestart ();
     time_t   timestop  ();
 
-    TP32DataSummary TemperatureSummary();
-    TP32DataSummary PressureSummary();
+    TP32TemperatureSummary  TemperatureSummary();
+    TP32PressureSummary     PressureSummary();
   
 }; // class TP32DataQueue
 
