@@ -168,7 +168,7 @@ class TP32DataQueue
 
      int32_t t_high, t_low;
     uint32_t p_high, p_low;
-	 double  t_avg,  p_avg;
+     double  t_avg,  p_avg;
      bool    stale;
 
   public:
