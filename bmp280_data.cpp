@@ -93,6 +93,7 @@ TP32Data::TP32Data( int32_t temp, uint32_t press )
  *
  * Description:
  *   Constructor. Sets the queue maximum capacity.
+ *   Initializes summary data.
  *
  * Namespace:
  *   bosch_bmp280
@@ -329,61 +330,6 @@ bool TP32DataQueue::full()
 int TP32DataQueue::size()
 {
     return dq.size();
-}
-
-/*
- * time_t TP32DataQueue::timestart()
- *
- * Description:
- *   Returns the time stamp from the TP32Data at the front of
- *   the queue. If the queue is empty, returns the current time.
- *
- * Returns:
- *   Returns the time stamp from the TP32Data at the front of
- *   the queue or, if the queue is empty, the current time.
- *
- * Namespace:
- *   bosch_bmp280
- *
- * Header File(s);
- *   bmp280.hpp
- */
-time_t TP32DataQueue::timestart()
-{
-    if (dq.size() < 1)
-    {
-        return time(nullptr);
-    }
-
-    return this->front().timestamp;
-}
-
-/*
- * time_t TP32DataQueue::timestop()
- *
- * Description:
- *   Returns the time stamp from the TP32Data at the back of
- *   the queue (i.e., the most recently added data). If the
- *   queue is empty, returns the current time.
- *
- * Returns:
- *   Returns the time stamp from the TP32Data at the front of
- *   the queue or, if the queue is empty, the current time.
- *
- * Namespace:
- *   bosch_bmp280
- *
- * Header File(s);
- *   bmp280.hpp
- */
-time_t TP32DataQueue::timestop()
-{
-    if (dq.size() < 1)
-    {
-        return time(nullptr);
-    }
-
-    return this->back().timestamp;
 }
 
 /*
