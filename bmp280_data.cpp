@@ -106,10 +106,10 @@ TP32DataQueue::TP32DataQueue(int capacity)
 
     t_high = INT32_MIN;
     t_low  = INT32_MAX;
-    t_avg  = 0;
+    t_avg  = 0.0;
     p_high = 0;
     p_low  = UINT32_MAX;
-    p_avg  = 0;
+    p_avg  = 0.0;
 
     stale = true;
 }
@@ -405,8 +405,8 @@ void TP32DataQueue::summarize()
     p_high = 0;
     p_low  = UINT32_MAX;
 
-    t_avg = 0;
-    p_avg = 0;
+    t_avg = 0.0;
+    p_avg = 0.0;
 
     if (dq.size() > 0)
     {
@@ -426,11 +426,87 @@ void TP32DataQueue::summarize()
             if (press < p_low)  p_low  = press;
         }
 
-        t_avg = tsum/dq.size();
-        p_avg = psum/dq.size();
+        t_avg = (double)tsum/dq.size();
+        p_avg = (double)psum/dq.size();
 
         stale = false;
     }
+}
+
+/*
+ * TP32TemperatureSummary TP32DataQueue::TemperatureSummary()
+ *
+ * Description:
+ *   Calculates summary data for all temperature values that
+ *   are in the queue.
+ *
+ *   Throws a runtime_error exception if the queue is empty.
+ *
+ * Returns:
+ *   Returns a TP32TemperatureSummary object.
+ *
+ * Exceptions:
+ *   runtime_error
+ *
+ * Namespace:
+ *   bosch_bmp280
+ *
+ * Header File(s);
+ *   bmp280.hpp
+ */
+TP32TemperatureSummary TP32DataQueue::TemperatureSummary()
+{
+    if (stale)
+        this->summarize();
+
+    TP32TemperatureSummary tsummary;
+    tsummary.timestart   = this->front().timestamp;
+    tsummary.timestop    = this->back().timestamp;
+    tsummary.samplecount = dq.size();
+
+    tsummary.high    = t_high;
+    tsummary.low     = t_low;
+    tsummary.average = t_avg;
+
+    return tsummary;
+}
+
+/*
+ * TP32PressureSummary TP32DataQueue::PressureSummary()
+ *
+ * Description:
+ *   Calculates summary data for all pressure values that
+ *   are in the queue.
+ *
+ *   Throws a runtime_error exception if the queue is empty.
+ *
+ * Returns:
+ *   Returns a TP32PressureSummary object.
+ *
+ * Exceptions:
+ *   runtime_error
+ *
+ * Namespace:
+ *   bosch_bmp280
+ *
+ * Header File(s);
+ *   bmp280.hpp
+ */
+TP32PressureSummary TP32DataQueue::PressureSummary()
+{
+    if (stale)
+        this->summarize();
+
+    TP32PressureSummary psummary;
+    psummary.timestart   = this->front().timestamp;
+    psummary.timestop    = this->back().timestamp;
+    psummary.samplecount = dq.size();
+
+    psummary.high    = p_high;
+    psummary.low     = p_low;
+    psummary.average = p_avg;
+
+    return psummary;
 }
 
 } // namespace bosch_bmp280
