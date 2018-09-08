@@ -434,10 +434,176 @@ void TP32DataQueue::summarize()
 }
 
 /*
+ * time_t TP32DataQueue::timestart()
+ *
+ * Description:
+ *   Retrieves the time stamp from the front of the queue.
+ *
+ * Exceptions:
+ *   runtime_error
+ *
+ * Namespace:
+ *   bosch_bmp280
+ *
+ * Header File(s);
+ *   bmp280.hpp
+ */
+time_t TP32DataQueue::timestart()
+{
+    return this->front().timestamp;
+}
+
+/*
+ * time_t TP32DataQueue::timestop()
+ *
+ * Description:
+ *   Retrieves the time stamp from the back of the queue.
+ *
+ * Exceptions:
+ *   runtime_error
+ *
+ * Namespace:
+ *   bosch_bmp280
+ *
+ * Header File(s);
+ *   bmp280.hpp
+ */
+time_t TP32DataQueue::timestop()
+{
+    return this->back().timestamp;
+}
+
+/*
+ * int32_t TP32DataQueue::temperature_high()
+ *
+ * Description:
+ *   Re-calculates summary data, if necessary, and returns
+ *   the highest temperature reading from the queue.
+ *
+ * Namespace:
+ *   bosch_bmp280
+ *
+ * Header File(s);
+ *   bmp280.hpp
+ */
+int32_t TP32DataQueue::temperature_high()
+{
+    if (stale)
+        this->summarize();
+
+    return t_high;
+}
+
+/*
+ * int32_t TP32DataQueue::temperature_low()
+ *
+ * Description:
+ *   Re-calculates summary data, if necessary, and returns
+ *   the lowest temperature reading from the queue.
+ *
+ * Namespace:
+ *   bosch_bmp280
+ *
+ * Header File(s);
+ *   bmp280.hpp
+ */
+int32_t TP32DataQueue::temperature_low()
+{
+    if (stale)
+        this->summarize();
+
+    return t_low;
+}
+
+/*
+ * double TP32DataQueue::temperature_average()
+ *
+ * Description:
+ *   Re-calculates summary data, if necessary, and returns
+ *   the average of all temperature readings in the queue.
+ *
+ * Namespace:
+ *   bosch_bmp280
+ *
+ * Header File(s);
+ *   bmp280.hpp
+ */
+double TP32DataQueue::temperature_average()
+{
+    if (stale)
+        this->summarize();
+
+    return t_avg;
+}
+
+/*
+ * uint32_t TP32DataQueue::pressure_high()
+ *
+ * Description:
+ *   Re-calculates summary data, if necessary, and returns
+ *   the highest pressure reading from the queue.
+ *
+ * Namespace:
+ *   bosch_bmp280
+ *
+ * Header File(s);
+ *   bmp280.hpp
+ */
+uint32_t TP32DataQueue::pressure_high()
+{
+    if (stale)
+        this->summarize();
+
+    return p_high;
+}
+
+/*
+ * uint32_t TP32DataQueue::pressure_low()
+ *
+ * Description:
+ *   Re-calculates summary data, if necessary, and returns
+ *   the lowest pressure reading from the queue.
+ *
+ * Namespace:
+ *   bosch_bmp280
+ *
+ * Header File(s);
+ *   bmp280.hpp
+ */
+uint32_t TP32DataQueue::pressure_low()
+{
+    if (stale)
+        this->summarize();
+
+    return p_low;
+}
+
+/*
+ * double TP32DataQueue::pressure_average()
+ *
+ * Description:
+ *   Re-calculates summary data, if necessary, and returns
+ *   the average of all pressure readings in the queue.
+ *
+ * Namespace:
+ *   bosch_bmp280
+ *
+ * Header File(s);
+ *   bmp280.hpp
+ */
+double TP32DataQueue::pressure_average()
+{
+    if (stale)
+        this->summarize();
+
+    return p_avg;
+}
+
+/*
  * TP32TemperatureSummary TP32DataQueue::TemperatureSummary()
  *
  * Description:
- *   Calculates summary data for all temperature values that
+ *   Retrieves summary data for all temperature readings that
  *   are in the queue.
  *
  *   Throws a runtime_error exception if the queue is empty.
@@ -475,7 +641,7 @@ TP32TemperatureSummary TP32DataQueue::TemperatureSummary()
  * TP32PressureSummary TP32DataQueue::PressureSummary()
  *
  * Description:
- *   Calculates summary data for all pressure values that
+ *   Retrieves summary data for all pressure readings that
  *   are in the queue.
  *
  *   Throws a runtime_error exception if the queue is empty.
