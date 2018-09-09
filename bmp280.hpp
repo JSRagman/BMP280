@@ -1,3 +1,4 @@
+```
 /*
  * bmp280.hpp
  *
@@ -37,37 +38,39 @@ namespace bosch_bmp280
 
 class BMP280
 {
-	protected:
+  protected:
+
+    I2CBus*    i2cbus;
+    uint8_t    i2caddr;
+    int32_t    tfine;
+    CalParams  cparams;
+
+    void  GetRegs ( uint8_t startaddr, uint8_t* data, int len );
+    void  SetRegs ( uint8_t* data, int len );
 	
-		I2CBus*    i2cbus;
-		uint8_t    i2caddr;
-		int32_t    tfine;
-		CalParams  cparams;
+  public:
+    
+    std::mutex mtx;
 
-	public:
-	
-		std::mutex mtx;
+    BMP280 ( I2CBus* bus, uint8_t addr );
+    ~BMP280 ();
 
-		BMP280 ( I2CBus* bus, uint8_t addr );
-		~BMP280 ();
+    void      LoadCalParams ();
+    int32_t   Comp32FixedTemp  (  int32_t unctemp  );
+    uint32_t  Comp32FixedPress ( uint32_t uncpress );
 
-		TP32Data  GetUncompData ();
-		TP32Data  GetComp32FixedData ();
+    TP32Data  GetUncompData ();
+    TP32Data  GetComp32FixedData ();
 
-		void      LoadCalParams ();
-		int32_t   Comp32FixedTemp  (  int32_t unctemp  );
-		uint32_t  Comp32FixedPress ( uint32_t uncpress );
+	void  GetConfig ( uint8_t& ctrl, uint8_t& conf );
+    void  SetConfig ( int preset );
+    void  SetConfig ( uint8_t ctrl, uint8_t conf );
 
-		void  GetRegs   ( uint8_t startaddr, uint8_t* data, int len );
-		void  SetRegs   ( uint8_t* data, int len );
-	
-		void  SetConfig ( int preset );
-		void  SetConfig ( uint8_t ctrl, uint8_t conf );
-
-		void  Reset ();
+    void  Reset ();
 
 }; // class BMP280
 
 } // namespace bosch_bmp280b
 
 #endif /* BMP280_HPP_ */
+```
