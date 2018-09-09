@@ -23,6 +23,7 @@
 
 #include <ctime>             // time_t
 #include <deque>             // deque
+#include <mutex>             // mutex, lock_guard
 #include <stdint.h>          // int32_t, uint32_t
 
 namespace bosch_bmp280
@@ -83,7 +84,7 @@ struct TP32Data
      time_t   timestamp;
      int32_t  temperature;
     uint32_t  pressure;
-	
+
     TP32Data ( int32_t temp=0, uint32_t press=0 );
 };
 
@@ -126,13 +127,13 @@ struct TP32PressureSummary
  */
 struct TP32TemperatureSummary
 {
-	time_t   timestart;
-	time_t   timestop;
-	int      samplecount;
+    time_t   timestart;
+    time_t   timestop;
+    int      samplecount;
 
-	int32_t high;
-	int32_t low;
-	double  average;
+    int32_t high;
+    int32_t low;
+    double  average;
 };
 
 
@@ -172,6 +173,8 @@ class TP32DataQueue
      bool    stale;
 
   public:
+    std::mutex mtx;
+
     TP32DataQueue ( int capacity=60 );
 
     TP32Data back  ();
@@ -184,7 +187,7 @@ class TP32DataQueue
     bool     full  ();
     int      size  ();
     void     summarize ();
-    
+
     time_t   timestart ();
     time_t   timestop  ();
 
@@ -198,7 +201,7 @@ class TP32DataQueue
 
     TP32TemperatureSummary  TemperatureSummary();
     TP32PressureSummary     PressureSummary();
-  
+
 }; // class TP32DataQueue
 
 } // namespace bosch_bmp280
