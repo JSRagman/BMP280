@@ -1,3 +1,4 @@
+```
 /*
  * bmp280.cpp
  *
@@ -17,90 +18,18 @@
  *    JSRagman is not associated in any way with the good people at
  *    Bosch, although sometimes he is a bit free with the drivers
  *    that are available on their GitHub site.
- *
- *  Just So You Know:
- *    Do you see those little comments that follow most of my include
- *    directives?  That is where I make note of the first type or
- *    function that required me to include that particular header.
- *
- *    I find that this practice helps to keep me from getting lost in
- *    header hell. If you also find this useful, you can claim that
- *    you continue the practice in order to remain consistent with
- *    existing code. Nobody needs to know.
  */
 
 #include <ctime>             // time_t, time()
 #include <unistd.h>          // usleep()
 
 #include "bmp280.hpp"        // BMP280
-#include "bmp280_defs.hpp"   // BMP280_R_PMSB
 
+
+using namespace std;
 
 namespace bosch_bmp280
 {
-
-// Calibration Parameters
-// -----------------------------------------------------------------
-
-/*
- * CalParams::CalParams()
- *
- * Description:
- *   Constructor. Initializes all parameters to zero,
- *   loaded = false.
- *
- * Namespace:
- *   bosch_bmp280
- *
- * Header File(s);
- *   bmp280.hpp
- */
-CalParams::CalParams()
-{
-	t1 = 0;
-	t2 = 0;
-	t3 = 0;
-
-	p1 = 0;
-	p2 = 0;
-	p3 = 0;
-	p4 = 0;
-	p5 = 0;
-	p6 = 0;
-	p7 = 0;
-	p8 = 0;
-	p9 = 0;
-
-	loaded = false;
-}
-
-
-// TP32Data
-// -----------------------------------------------------------------
-
-/*
- * TP32Data::TP32Data( int32_t temp, uint32_t press )
- *
- * Description:
- *   Constructor. Sets the timestamp, along with temperature and
- *   pressure values.
- *
- * Parameters:
- *   temp  - optional. Temperature value. The default value is zero.
- *   press - optional. Pressure value.    The default value is zero.
- *
- * Namespace:
- *   bosch_bmp280
- *
- * Header File(s);
- *   bmp280.hpp
- */
-TP32Data::TP32Data( int32_t temp, uint32_t press )
-{
-	timestamp   = time(nullptr);
-	temperature = temp;
-	pressure    = press;
-}
 
 
 // BMP280 Constructor, Destructor
@@ -111,11 +40,11 @@ TP32Data::TP32Data( int32_t temp, uint32_t press )
  *
  * Description:
  *   Constructor. Assigns the I2C bus and the target device address.
- *   Initializes the temperature compensation variable tfine to zero.
+ *   Initializes temperature compensation variable tfine to zero.
  *
  * Parameters:
- *   bus  - pointer to an I2CBus object.
- *   addr - the target device I2C address.
+ *   bus  - pointer to an I2CBus object
+ *   addr - I2C address of the target device
  *
  * Namespace:
  *   bosch_bmp280
@@ -150,6 +79,41 @@ BMP280::~BMP280()
 // -----------------------------------------------------------------
 
 /*
+ * void BMP280::LoadCalParams()
+ *
+ * Description:
+ *   Loads calibration parameters from the device ROM.
+ *
+ * Namespace:
+ *   bosch_bmp280
+ *
+ * Header File(s);
+ *   bmp280.hpp
+ */
+void BMP280::LoadCalParams()
+{
+	uint8_t dat[BMP280_CAL_SIZE] {0};
+
+	this->GetRegs(BMP280_CAL_START, dat, BMP280_CAL_SIZE);
+
+	cparams.t1 = ((uint16_t)dat[BMP280_CAL_T1H_NDX] << 8) | (uint16_t)dat[BMP280_CAL_T1L_NDX];
+	cparams.t2 = (( int16_t)dat[BMP280_CAL_T2H_NDX] << 8) | ( int16_t)dat[BMP280_CAL_T2L_NDX];
+	cparams.t3 = (( int16_t)dat[BMP280_CAL_T3H_NDX] << 8) | ( int16_t)dat[BMP280_CAL_T3L_NDX];
+
+	cparams.p1 = ((uint16_t)dat[BMP280_CAL_P1H_NDX] << 8) | (uint16_t)dat[BMP280_CAL_P1L_NDX];
+	cparams.p2 = (( int16_t)dat[BMP280_CAL_P2H_NDX] << 8) | ( int16_t)dat[BMP280_CAL_P2L_NDX];
+	cparams.p3 = (( int16_t)dat[BMP280_CAL_P3H_NDX] << 8) | ( int16_t)dat[BMP280_CAL_P3L_NDX];
+	cparams.p4 = (( int16_t)dat[BMP280_CAL_P4H_NDX] << 8) | ( int16_t)dat[BMP280_CAL_P4L_NDX];
+	cparams.p5 = (( int16_t)dat[BMP280_CAL_P5H_NDX] << 8) | ( int16_t)dat[BMP280_CAL_P5L_NDX];
+	cparams.p6 = (( int16_t)dat[BMP280_CAL_P6H_NDX] << 8) | ( int16_t)dat[BMP280_CAL_P6L_NDX];
+	cparams.p7 = (( int16_t)dat[BMP280_CAL_P7H_NDX] << 8) | ( int16_t)dat[BMP280_CAL_P7L_NDX];
+	cparams.p8 = (( int16_t)dat[BMP280_CAL_P8H_NDX] << 8) | ( int16_t)dat[BMP280_CAL_P8L_NDX];
+	cparams.p9 = (( int16_t)dat[BMP280_CAL_P9H_NDX] << 8) | ( int16_t)dat[BMP280_CAL_P9L_NDX];
+
+	cparams.loaded = true;
+}
+
+/*
  * TP32Data BMP280::GetUncompData()
  *
  * Description:
@@ -164,7 +128,6 @@ BMP280::~BMP280()
  *
  * Header File(s);
  *   bmp280.hpp
- *   bmp280_defs.hpp
  */
 TP32Data BMP280::GetUncompData()
 {
@@ -172,8 +135,6 @@ TP32Data BMP280::GetUncompData()
     uint8_t dat[6]{0};
 
     this->GetRegs(BMP280_R_PMSB, dat, 6);
-
-    unc.timestamp = time(nullptr);
 
     unc.pressure =
         (uint32_t) (
@@ -196,7 +157,7 @@ TP32Data BMP280::GetUncompData()
  * TP32Data BMP280::GetComp32FixedData()
  *
  * Description:
- *   Retrieves a temperature/pressure reading and applies
+ *   Retrieves a temperature and pressure reading and applies
  *   32-bit fixed-point compensation.
  *
  *   Temperature compensation is performed first, in order to generate
@@ -276,6 +237,31 @@ void BMP280::SetRegs(uint8_t* data, int len)
 }
 
 /*
+ * void BMP280::GetConfig(uint8_t& ctrl, uint8_t& conf)
+ *
+ * Description:
+ *   Reads the device ctrl_meas and config registers.
+ *
+ * Parameters:
+ *   ctrl - receives the contents of the ctrl_meas register.
+ *   conf - receives the contents of the config register.
+ *
+ * Namespace:
+ *   bosch_bmp280
+ *
+ * Header File(s);
+ *   bmp280.hpp
+ */
+void BMP280::GetConfig(uint8_t& ctrl, uint8_t& conf)
+{
+	uint8_t dat[2];
+	this->GetRegs(BMP280_R_CTRL, dat, 2);
+
+	ctrl = dat[0];
+	conf = dat[1];
+}
+
+/*
  * void BMP280::SetConfig(uint8_t ctrl, uint8_t conf)
  *
  * Description:
@@ -300,7 +286,6 @@ void BMP280::SetRegs(uint8_t* data, int len)
  *
  * Header File(s);
  *   bmp280.hpp
- *   bmp280_defs.hpp
  */
 void BMP280::SetConfig(uint8_t ctrl, uint8_t conf)
 {
@@ -319,17 +304,13 @@ void BMP280::SetConfig(uint8_t ctrl, uint8_t conf)
  *   Sets the device to one of the six available preset configurations.
  *
  * Parameters:
- *   preset - Preset configuration number. An integer value between
- *            one and six, inclusive.
- *            Values outside of this range will select the default
- *            configuration.
+ *   preset - An integer value between one and six, inclusive.
  *
  * Namespace:
  *   bosch_bmp280
  *
  * Header File(s);
  *   bmp280.hpp
- *   bmp280_defs.hpp
  */
 void BMP280::SetConfig(int preset)
 {
@@ -383,7 +364,6 @@ void BMP280::SetConfig(int preset)
  *
  * Header File(s):
  *   bmp280.hpp
- *   bmp280_defs.hpp
  */
 void BMP280::Reset()
 {
@@ -394,3 +374,4 @@ void BMP280::Reset()
 }
 
 } // namespace bosch_bmp280
+```
