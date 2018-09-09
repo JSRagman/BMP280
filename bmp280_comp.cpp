@@ -1,3 +1,4 @@
+```
 /*
  * bmp280_comp.cpp
  *
@@ -20,47 +21,10 @@
  */
 
 #include "bmp280.hpp"
-#include "bmp280_defs.hpp"
 
 
 namespace bosch_bmp280
 {
-
-/*
- * void BMP280::LoadCalParams()
- *
- * Description:
- *   Loads calibration parameters from the device ROM.
- *
- * Namespace:
- *   bosch_bmp280
- *
- * Header File(s);
- *   bmp280.hpp
- *   bmp280_defs.hpp
- */
-void BMP280::LoadCalParams()
-{
-	uint8_t dat[BMP280_CAL_SIZE] {0};
-
-	this->GetRegs(BMP280_CAL_START, dat, BMP280_CAL_SIZE);
-
-	cparams.t1 = ((uint16_t)dat[BMP280_CAL_T1H_NDX] << 8) | (uint16_t)dat[BMP280_CAL_T1L_NDX];
-	cparams.t2 = (( int16_t)dat[BMP280_CAL_T2H_NDX] << 8) | ( int16_t)dat[BMP280_CAL_T2L_NDX];
-	cparams.t3 = (( int16_t)dat[BMP280_CAL_T3H_NDX] << 8) | ( int16_t)dat[BMP280_CAL_T3L_NDX];
-
-	cparams.p1 = ((uint16_t)dat[BMP280_CAL_P1H_NDX] << 8) | (uint16_t)dat[BMP280_CAL_P1L_NDX];
-	cparams.p2 = (( int16_t)dat[BMP280_CAL_P2H_NDX] << 8) | ( int16_t)dat[BMP280_CAL_P2L_NDX];
-	cparams.p3 = (( int16_t)dat[BMP280_CAL_P3H_NDX] << 8) | ( int16_t)dat[BMP280_CAL_P3L_NDX];
-	cparams.p4 = (( int16_t)dat[BMP280_CAL_P4H_NDX] << 8) | ( int16_t)dat[BMP280_CAL_P4L_NDX];
-	cparams.p5 = (( int16_t)dat[BMP280_CAL_P5H_NDX] << 8) | ( int16_t)dat[BMP280_CAL_P5L_NDX];
-	cparams.p6 = (( int16_t)dat[BMP280_CAL_P6H_NDX] << 8) | ( int16_t)dat[BMP280_CAL_P6L_NDX];
-	cparams.p7 = (( int16_t)dat[BMP280_CAL_P7H_NDX] << 8) | ( int16_t)dat[BMP280_CAL_P7L_NDX];
-	cparams.p8 = (( int16_t)dat[BMP280_CAL_P8H_NDX] << 8) | ( int16_t)dat[BMP280_CAL_P8L_NDX];
-	cparams.p9 = (( int16_t)dat[BMP280_CAL_P9H_NDX] << 8) | ( int16_t)dat[BMP280_CAL_P9L_NDX];
-
-	cparams.loaded = true;
-}
 
 /*
  * int32_t BMP280::Comp32FixedTemp(int32_t unctemp)
@@ -186,6 +150,5 @@ uint32_t BMP280::Comp32FixedPress(uint32_t uncpress)
     return pressure;
 }
 
-
-
-}
+} // namespace bosch_bmp280
+```
