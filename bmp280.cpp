@@ -206,7 +206,7 @@ TP32Data BMP280::GetComp32FixedData()
  */
 void BMP280::GetRegs(uint8_t startaddr, uint8_t* data, int len)
 {
-    i2cbus->Xfer(startaddr, data, len, i2caddr);
+    i2cbus->Xfer(&startaddr, 1, data, len, i2caddr);
 }
 
 /*
