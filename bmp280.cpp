@@ -9,10 +9,16 @@
  *    Bosch Sensortec BMP280 Digital Pressure Sensor and associated
  *    data structures.
  *
- *  Note:
- *    Functions dealing with temperature and pressure compensation
- *    are located in a separate source file. Seriously. It's better
- *    this way.
+ *  Notes:
+ *    1. Source code has been split into separate files for clarity.
+ *       This file implements the BMP280 device itself.
+ *       Related files implement data structures (bmp280_data.cpp) and
+ *       data compensation functions (bmp280_comp.cpp).
+ *    2. Comments that follow the #include directives indicate the
+ *       first few types or functions that require the inclusion,
+ *       but not necessarily all of them.
+ *    3. bmp280.hpp has its own #includes to pull in the related
+ *       bmp280 headers.
  *
  *  And Another Thing:
  *    JSRagman is not associated in any way with the good people at
@@ -21,16 +27,18 @@
  */
 
 #include <ctime>             // time_t, time()
+#include <mutex>             // mutex, lock_guard
+#include <stdexcept>         // runtime_error
 #include <unistd.h>          // usleep()
 
 #include "bmp280.hpp"        // BMP280
 
+using namespace std;
 
 using namespace std;
 
 namespace bosch_bmp280
 {
-
 
 // BMP280 Constructor, Destructor
 // -----------------------------------------------------------------
@@ -54,9 +62,9 @@ namespace bosch_bmp280
  */
 BMP280::BMP280(bbbi2c::I2CBus* bus, uint8_t addr)
 {
-	i2cbus  = bus;
-	i2caddr = addr;
-	tfine   = 0;
+    i2cbus  = bus;
+    i2caddr = addr;
+    tfine   = 0;
 }
 
 /*
@@ -73,6 +81,59 @@ BMP280::BMP280(bbbi2c::I2CBus* bus, uint8_t addr)
  */
 BMP280::~BMP280()
 { }
+
+
+// BMP280 Protected
+// -----------------------------------------------------------------
+
+/*
+ * void BMP280::GetRegs(uint8_t startaddr, uint8_t* data, int len)
+ *
+ * Description:
+ *   Reads the contents of one or more consecutive device registers.
+ *
+ * Parameters:
+ *   startaddr - address of the first register to be read
+ *   data      - pointer to a buffer that will receive data
+ *   len       - the number of bytes to read
+ *
+ * Namespace:
+ *   bosch_bmp280
+ *
+ * Header File(s);
+ *   bmp280.hpp
+ */
+void BMP280::GetRegs(uint8_t startaddr, uint8_t* data, int len)
+{
+    i2cbus->Xfer(&startaddr, 1, data, len, i2caddr);
+}
+
+/*
+ * void BMP280::SetRegs(uint8_t* data, int len)
+ *
+ * Description:
+ *   Writes to one or more device registers. Outgoing bytes must
+ *   be organized in pairs - a register address followed by a data
+ *   byte for that register.
+ *
+ *   This {address, data} sequence is repeated for each register
+ *   to be written.
+ *
+ * Parameters:
+ *   data - pointer to a buffer that contains data which will be
+ *          written to the device
+ *   len  - the total number of bytes to be written
+ *
+ * Namespace:
+ *   bosch_bmp280
+ *
+ * Header File(s);
+ *   bmp280.hpp
+ */
+void BMP280::SetRegs(uint8_t* data, int len)
+{
+    i2cbus->Write(data, len, i2caddr);
+}
 
 
 // BMP280 Public
@@ -120,7 +181,7 @@ void BMP280::LoadCalParams()
  *   Retrieves raw temperature and pressure data from the sensor.
  *
  * Returns:
- *   Returns a structure containing uncompensated temperature
+ *   Returns a TP32Data structure containing uncompensated temperature
  *   and pressure data along with a time stamp.
  *
  * Namespace:
@@ -137,7 +198,7 @@ TP32Data BMP280::GetUncompData()
     this->GetRegs(BMP280_R_PMSB, dat, 6);
 
     unc.pressure =
-        (uint32_t) (
+        (int32_t) (
             (((uint32_t)dat[0]) << 12) |
             (((uint32_t)dat[1]) <<  4) |
             (((uint32_t)dat[2]) >>  4)
@@ -185,55 +246,6 @@ TP32Data BMP280::GetComp32FixedData()
     reading.pressure    = this->Comp32FixedPress(unc.pressure);
 
     return reading;
-}
-
-/*
- * void BMP280::GetRegs(uint8_t startaddr, uint8_t* data, int len)
- *
- * Description:
- *   Reads the contents of one or more consecutive device registers.
- *
- * Parameters:
- *   startaddr - address of the first register to be read.
- *   data      - pointer to a buffer that will receive data.
- *   len       - the number of bytes to read.
- *
- * Namespace:
- *   bosch_bmp280
- *
- * Header File(s);
- *   bmp280.hpp
- */
-void BMP280::GetRegs(uint8_t startaddr, uint8_t* data, int len)
-{
-    i2cbus->Xfer(&startaddr, 1, data, len, i2caddr);
-}
-
-/*
- * void BMP280::SetRegs(uint8_t* data, int len)
- *
- * Description:
- *   Writes to one or more device registers. Outgoing bytes must
- *   be organized in pairs - a register address followed by a data
- *   byte for that register.
- *
- *   This {address, data} sequence is repeated for each register
- *   to be written.
- *
- * Parameters:
- *   data - pointer to a buffer that contains data which will be
- *          written to the device.
- *   len  - the total number of bytes to be written.
- *
- * Namespace:
- *   bosch_bmp280
- *
- * Header File(s);
- *   bmp280.hpp
- */
-void BMP280::SetRegs(uint8_t* data, int len)
-{
-    i2cbus->Write(data, len, i2caddr);
 }
 
 /*
@@ -304,7 +316,7 @@ void BMP280::SetConfig(uint8_t ctrl, uint8_t conf)
  *   Sets the device to one of the six available preset configurations.
  *
  * Parameters:
- *   preset - An integer value between one and six, inclusive.
+ *   preset - An integer value between one and six, inclusive
  *
  * Namespace:
  *   bosch_bmp280
@@ -314,8 +326,8 @@ void BMP280::SetConfig(uint8_t ctrl, uint8_t conf)
  */
 void BMP280::SetConfig(int preset)
 {
-uint8_t ctrl;
-uint8_t conf;
+    uint8_t ctrl;
+    uint8_t conf;
 
     switch (preset)
     {
@@ -353,6 +365,34 @@ uint8_t conf;
 }
 
 /*
+ * void BMP280::Force()
+ *
+ * Description:
+ *   Sets the ctrl_meas register mode bits to forced.
+ *
+ * Initial Conditions:
+ *   All other configuration settings must be completed before
+ *   calling this function.
+ *
+ *   The sensor must be in sleep mode.
+ *
+ * Namespace:
+ *   bosch_bmp280
+ *
+ * Header File(s):
+ *   bmp280.hpp
+ */
+void BMP280::Force()
+{
+	uint8_t ctrl;
+	this->GetRegs(BMP280_R_CTRL, &ctrl, 1);
+
+	ctrl = (ctrl | BMP280_MODE_FORCED);
+	uint8_t dat[] { BMP280_R_CTRL, ctrl };
+	this->SetRegs(dat, 2);
+}
+
+/*
  * void BMP280::Reset()
  *
  * Description:
@@ -368,7 +408,7 @@ uint8_t conf;
 void BMP280::Reset()
 {
     uint8_t dat[] { BMP280_R_RESET, BMP280_CMD_RESET };
-    i2cbus->Write(dat, 2, i2caddr);
+    this->SetRegs(dat, 2);
 
     usleep(BMP280_RESET_DELAY);
 }
