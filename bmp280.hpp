@@ -23,7 +23,7 @@
 #define BMP280_HPP_
 
 #include  <ctime>            // time_t
-#include  <mutex>            // std::mutex
+#include  <mutex>            // mutex
 #include  <stdint.h>         // int16_t, uint16_t
 
 #include "bbb-i2c.hpp"       // I2CBus
@@ -62,10 +62,11 @@ class BMP280
     TP32Data  GetUncompData ();
     TP32Data  GetComp32FixedData ();
 
-	void  GetConfig ( uint8_t& ctrl, uint8_t& conf );
+    void  GetConfig ( uint8_t& ctrl, uint8_t& conf );
     void  SetConfig ( int preset );
     void  SetConfig ( uint8_t ctrl, uint8_t conf );
 
+    void  Force ();
     void  Reset ();
 
 }; // class BMP280
