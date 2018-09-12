@@ -27,10 +27,13 @@
  */
 
 #include <ctime>             // time_t, time()
+#include <mutex>             // mutex, lock_guard
+#include <stdexcept>         // runtime_error
 #include <unistd.h>          // usleep()
 
 #include "bmp280.hpp"
 
+using namespace std;
 
 namespace bosch_bmp280
 {
@@ -43,7 +46,7 @@ namespace bosch_bmp280
  *
  * Description:
  *   Constructor. Assigns the I2C bus and the target device address.
- *   Initializes the temperature compensation variable (tfine) to zero.
+ *   Initializes temperature compensation variable tfine to zero.
  *
  * Parameters:
  *   bus  - pointer to an I2CBus object
@@ -78,8 +81,96 @@ BMP280::~BMP280()
 { }
 
 
+// BMP280 Protected
+// -----------------------------------------------------------------
+
+/*
+ * void BMP280::GetRegs(uint8_t startaddr, uint8_t* data, int len)
+ *
+ * Description:
+ *   Reads the contents of one or more consecutive device registers.
+ *
+ * Parameters:
+ *   startaddr - address of the first register to be read
+ *   data      - pointer to a buffer that will receive data
+ *   len       - the number of bytes to read
+ *
+ * Namespace:
+ *   bosch_bmp280
+ *
+ * Header File(s);
+ *   bmp280.hpp
+ */
+void BMP280::GetRegs(uint8_t startaddr, uint8_t* data, int len)
+{
+    i2cbus->Xfer(&startaddr, 1, data, len, i2caddr);
+}
+
+/*
+ * void BMP280::SetRegs(uint8_t* data, int len)
+ *
+ * Description:
+ *   Writes to one or more device registers. Outgoing bytes must
+ *   be organized in pairs - a register address followed by a data
+ *   byte for that register.
+ *
+ *   This {address, data} sequence is repeated for each register
+ *   to be written.
+ *
+ * Parameters:
+ *   data - pointer to a buffer that contains data which will be
+ *          written to the device
+ *   len  - the total number of bytes to be written
+ *
+ * Namespace:
+ *   bosch_bmp280
+ *
+ * Header File(s);
+ *   bmp280.hpp
+ */
+void BMP280::SetRegs(uint8_t* data, int len)
+{
+    i2cbus->Write(data, len, i2caddr);
+}
+
+
 // BMP280 Public
 // -----------------------------------------------------------------
+
+/*
+ * void BMP280::LoadCalParams()
+ *
+ * Description:
+ *   Loads calibration parameters from the device ROM.
+ *
+ * Namespace:
+ *   bosch_bmp280
+ *
+ * Header File(s);
+ *   bmp280.hpp
+ */
+void BMP280::LoadCalParams()
+{
+	uint8_t dat[BMP280_CAL_SIZE] {0};
+
+	this->GetRegs(BMP280_CAL_START, dat, BMP280_CAL_SIZE);
+
+	cparams.t1 = ((uint16_t)dat[BMP280_CAL_T1H_NDX] << 8) | (uint16_t)dat[BMP280_CAL_T1L_NDX];
+	cparams.t2 = (( int16_t)dat[BMP280_CAL_T2H_NDX] << 8) | ( int16_t)dat[BMP280_CAL_T2L_NDX];
+	cparams.t3 = (( int16_t)dat[BMP280_CAL_T3H_NDX] << 8) | ( int16_t)dat[BMP280_CAL_T3L_NDX];
+
+	cparams.p1 = ((uint16_t)dat[BMP280_CAL_P1H_NDX] << 8) | (uint16_t)dat[BMP280_CAL_P1L_NDX];
+	cparams.p2 = (( int16_t)dat[BMP280_CAL_P2H_NDX] << 8) | ( int16_t)dat[BMP280_CAL_P2L_NDX];
+	cparams.p3 = (( int16_t)dat[BMP280_CAL_P3H_NDX] << 8) | ( int16_t)dat[BMP280_CAL_P3L_NDX];
+	cparams.p4 = (( int16_t)dat[BMP280_CAL_P4H_NDX] << 8) | ( int16_t)dat[BMP280_CAL_P4L_NDX];
+	cparams.p5 = (( int16_t)dat[BMP280_CAL_P5H_NDX] << 8) | ( int16_t)dat[BMP280_CAL_P5L_NDX];
+	cparams.p6 = (( int16_t)dat[BMP280_CAL_P6H_NDX] << 8) | ( int16_t)dat[BMP280_CAL_P6L_NDX];
+	cparams.p7 = (( int16_t)dat[BMP280_CAL_P7H_NDX] << 8) | ( int16_t)dat[BMP280_CAL_P7L_NDX];
+	cparams.p8 = (( int16_t)dat[BMP280_CAL_P8H_NDX] << 8) | ( int16_t)dat[BMP280_CAL_P8L_NDX];
+	cparams.p9 = (( int16_t)dat[BMP280_CAL_P9H_NDX] << 8) | ( int16_t)dat[BMP280_CAL_P9L_NDX];
+
+	cparams.loaded = true;
+}
 
 /*
  * TP32Data BMP280::GetUncompData()
@@ -105,7 +196,7 @@ TP32Data BMP280::GetUncompData()
     this->GetRegs(BMP280_R_PMSB, dat, 6);
 
     unc.pressure =
-        (uint32_t) (
+        (int32_t) (
             (((uint32_t)dat[0]) << 12) |
             (((uint32_t)dat[1]) <<  4) |
             (((uint32_t)dat[2]) >>  4)
@@ -156,15 +247,14 @@ TP32Data BMP280::GetComp32FixedData()
 }
 
 /*
- * void BMP280::GetRegs(uint8_t startaddr, uint8_t* data, int len)
+ * void BMP280::GetConfig(uint8_t& ctrl, uint8_t& conf)
  *
  * Description:
- *   Reads the contents of one or more consecutive device registers.
+ *   Reads the device ctrl_meas and config registers.
  *
  * Parameters:
- *   startaddr - address of the first register to be read
- *   data      - pointer to a buffer that will receive data
- *   len       - the number of bytes to read
+ *   ctrl - receives the contents of the ctrl_meas register.
+ *   conf - receives the contents of the config register.
  *
  * Namespace:
  *   bosch_bmp280
@@ -172,36 +262,13 @@ TP32Data BMP280::GetComp32FixedData()
  * Header File(s);
  *   bmp280.hpp
  */
-void BMP280::GetRegs(uint8_t startaddr, uint8_t* data, int len)
+void BMP280::GetConfig(uint8_t& ctrl, uint8_t& conf)
 {
-    i2cbus->Xfer(startaddr, data, len, i2caddr);
-}
+	uint8_t dat[2];
+	this->GetRegs(BMP280_R_CTRL, dat, 2);
 
-/*
- * void BMP280::SetRegs(uint8_t* data, int len)
- *
- * Description:
- *   Writes to one or more device registers. Outgoing bytes must
- *   be organized in pairs - a register address followed by a data
- *   byte for that register.
- *
- *   This {address, data} sequence is repeated for each register
- *   to be written.
- *
- * Parameters:
- *   data - pointer to a buffer that contains data which will be
- *          written to the device
- *   len  - the total number of bytes to be written
- *
- * Namespace:
- *   bosch_bmp280
- *
- * Header File(s);
- *   bmp280.hpp
- */
-void BMP280::SetRegs(uint8_t* data, int len)
-{
-    i2cbus->Write(data, len, i2caddr);
+	ctrl = dat[0];
+	conf = dat[1];
 }
 
 /*
@@ -293,6 +360,34 @@ void BMP280::SetConfig(int preset)
     }
 
     this->SetConfig(ctrl, conf);
+}
+
+/*
+ * void BMP280::Force()
+ *
+ * Description:
+ *   Sets the ctrl_meas register mode bits to forced.
+ *
+ * Initial Conditions:
+ *   All other configuration settings must be completed before
+ *   calling this function.
+ *
+ *   The sensor must be in sleep mode.
+ *
+ * Namespace:
+ *   bosch_bmp280
+ *
+ * Header File(s):
+ *   bmp280.hpp
+ */
+void BMP280::Force()
+{
+	uint8_t ctrl;
+	this->GetRegs(BMP280_R_CTRL, &ctrl, 1);
+
+	ctrl = (ctrl | BMP280_MODE_FORCED);
+	uint8_t dat[] { BMP280_R_CTRL, ctrl };
+	this->SetRegs(dat, 2);
 }
 
 /*
