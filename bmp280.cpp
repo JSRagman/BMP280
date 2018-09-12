@@ -35,8 +35,6 @@
 
 using namespace std;
 
-using namespace std;
-
 namespace bosch_bmp280
 {
 
