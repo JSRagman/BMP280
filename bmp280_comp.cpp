@@ -151,4 +151,3 @@ uint32_t BMP280::Comp32FixedPress(uint32_t uncpress)
 
 } // namespace bosch_bmp280
 ```
-

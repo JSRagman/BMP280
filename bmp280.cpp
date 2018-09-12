@@ -31,7 +31,9 @@
 #include <stdexcept>         // runtime_error
 #include <unistd.h>          // usleep()
 
-#include "bmp280.hpp"
+#include "bmp280.hpp"        // BMP280
+
+using namespace std;
 
 using namespace std;
 
@@ -216,7 +218,7 @@ TP32Data BMP280::GetUncompData()
  * TP32Data BMP280::GetComp32FixedData()
  *
  * Description:
- *   Retrieves a temperature/pressure reading and applies
+ *   Retrieves a temperature and pressure reading and applies
  *   32-bit fixed-point compensation.
  *
  *   Temperature compensation is performed first, in order to generate
@@ -264,11 +266,11 @@ TP32Data BMP280::GetComp32FixedData()
  */
 void BMP280::GetConfig(uint8_t& ctrl, uint8_t& conf)
 {
-	uint8_t dat[2];
-	this->GetRegs(BMP280_R_CTRL, dat, 2);
+    uint8_t dat[2];
+    this->GetRegs(BMP280_R_CTRL, dat, 2);
 
-	ctrl = dat[0];
-	conf = dat[1];
+    ctrl = dat[0];
+    conf = dat[1];
 }
 
 /*
@@ -406,7 +408,7 @@ void BMP280::Force()
 void BMP280::Reset()
 {
     uint8_t dat[] { BMP280_R_RESET, BMP280_CMD_RESET };
-    i2cbus->Write(dat, 2, i2caddr);
+    this->SetRegs(dat, 2);
 
     usleep(BMP280_RESET_DELAY);
 }
