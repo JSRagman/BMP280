@@ -61,7 +61,7 @@ CalParams::CalParams()
 // -----------------------------------------------------------------
 
 /*
- * TP32Data::TP32Data( int32_t temp, uint32_t press )
+ * TP32Data::TP32Data( int32_t temp, int32_t press )
  *
  * Description:
  *   Constructor. Sets the timestamp, along with temperature and
@@ -77,7 +77,7 @@ CalParams::CalParams()
  * Header File(s);
  *   bmp280.hpp
  */
-TP32Data::TP32Data( int32_t temp, uint32_t press )
+TP32Data::TP32Data( int32_t temp, int32_t press )
 {
     timestamp   = time(nullptr);
     temperature = temp;
@@ -109,7 +109,7 @@ TP32DataQueue::TP32DataQueue(int capacity)
     t_low  = INT32_MAX;
     t_avg  = 0.0;
     p_high = 0;
-    p_low  = UINT32_MAX;
+    p_low  = INT32_MAX;
     p_avg  = 0.0;
 
     stale = true;
@@ -349,27 +349,27 @@ void TP32DataQueue::summarize()
     t_high = INT32_MIN;
     t_low  = INT32_MAX;
     p_high = 0;
-    p_low  = UINT32_MAX;
+    p_low  = INT32_MAX;
 
     t_avg = 0.0;
     p_avg = 0.0;
 
     if (dq.size() > 0)
     {
-         int32_t tsum = 0;
-        uint32_t psum = 0;
+        int32_t temp, press;
+        int32_t tsum = 0;
+        int32_t psum = 0;
         for (auto it = dq.cbegin(); it != dq.cend(); ++it)
         {
-             int32_t temp  = ((TP32Data)*it).temperature;
-            uint32_t press = ((TP32Data)*it).pressure;
-
-            tsum += temp;
+            temp  = ((TP32Data)*it).temperature;
             if (temp > t_high)  t_high = temp;
             if (temp < t_low)   t_low  = temp;
+            tsum += temp;
 
-            psum += press;
+            press = ((TP32Data)*it).pressure;
             if (press > p_high) p_high = press;
             if (press < p_low)  p_low  = press;
+            psum += press;
         }
 
         t_avg = (double)tsum/dq.size();
@@ -546,7 +546,7 @@ double TP32DataQueue::pressure_average()
 }
 
 /*
- * TP32TemperatureSummary TP32DataQueue::TemperatureSummary()
+ * TP32Summary TP32DataQueue::temperature_summary()
  *
  * Description:
  *   Retrieves summary data for all temperature readings that
@@ -555,7 +555,7 @@ double TP32DataQueue::pressure_average()
  *   Throws a runtime_error exception if the queue is empty.
  *
  * Returns:
- *   Returns a TP32TemperatureSummary object.
+ *   Returns a TP32Summary object.
  *
  * Exceptions:
  *   runtime_error
@@ -566,12 +566,12 @@ double TP32DataQueue::pressure_average()
  * Header File(s);
  *   bmp280.hpp
  */
-TP32TemperatureSummary TP32DataQueue::TemperatureSummary()
+TP32Summary TP32DataQueue::temperature_summary()
 {
     if (stale)
         this->summarize();
 
-    TP32TemperatureSummary tsummary;
+    TP32Summary tsummary;
     tsummary.timestart   = this->front().timestamp;
     tsummary.timestop    = this->back().timestamp;
     tsummary.samplecount = dq.size();
@@ -584,7 +584,7 @@ TP32TemperatureSummary TP32DataQueue::TemperatureSummary()
 }
 
 /*
- * TP32PressureSummary TP32DataQueue::PressureSummary()
+ * TP32Summary TP32DataQueue::pressure_summary()
  *
  * Description:
  *   Retrieves summary data for all pressure readings that
@@ -593,7 +593,7 @@ TP32TemperatureSummary TP32DataQueue::TemperatureSummary()
  *   Throws a runtime_error exception if the queue is empty.
  *
  * Returns:
- *   Returns a TP32PressureSummary object.
+ *   Returns a TP32Summary object.
  *
  * Exceptions:
  *   runtime_error
@@ -604,12 +604,12 @@ TP32TemperatureSummary TP32DataQueue::TemperatureSummary()
  * Header File(s);
  *   bmp280.hpp
  */
-TP32PressureSummary TP32DataQueue::PressureSummary()
+TP32Summary TP32DataQueue::pressure_summary()
 {
     if (stale)
         this->summarize();
 
-    TP32PressureSummary psummary;
+    TP32Summary psummary;
     psummary.timestart   = this->front().timestamp;
     psummary.timestop    = this->back().timestamp;
     psummary.samplecount = dq.size();
